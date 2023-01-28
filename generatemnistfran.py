@@ -21,6 +21,10 @@ test_data = datasets.MNIST(
     transform = ToTensor()
 )
 
+train_data.data = train_data.data / 255.0
+test_data.data = test_data.data / 255.0
+
+print(train_data.train_labels[:5])
 
 from torch.utils.data import DataLoader
 loaders = {
@@ -37,9 +41,16 @@ loaders = {
 
 # Step 2 Random Noise
 
-loaders['train'].dataset.data += np.round(np.random.random((1000, 28, 28)) - 0.4) * np.random.random((1000, 28, 28)) * 0.1
+data_set_len = len(loaders['train'].dataset.data)
+#loaders['train'].dataset.data = loaders['train'].dataset.data / 255.0
+#loaders['test'].dataset.data = loaders['test'].dataset.data / 255.0
+#loaders['train'].dataset.data += np.round(np.random.random((data_set_len, 28, 28)) - 0.4) * np.random.random((data_set_len, 28, 28)) * 0.1
 
-f.to_image(loaders['train'].dataset.data[0])
+for i in range(2):
+    f.to_image(np.array(loaders['train'].dataset.data[i]))
+
+
+# Step 3 Make model
 
 class CNN(nn.Module):
     def __init__(self):
@@ -80,8 +91,9 @@ from torch import optim
 optimizer = optim.Adam(cnn.parameters(), lr = 0.01)
 optimizer
 
+# Step 4 Train
 from torch.autograd import Variable
-num_epochs = 10
+num_epochs = 5
 def train(num_epochs, cnn, loaders):
 
     cnn.train()
@@ -118,6 +130,8 @@ def train(num_epochs, cnn, loaders):
 
 train(num_epochs, cnn, loaders)
 
+# Step 4.1 Test Model And do other stuff with model
+
 def test():
     # Test the model
     cnn.eval()
@@ -138,7 +152,6 @@ sample = next(iter(loaders['test']))
 imgs, lbls = sample
 
 actual_number = lbls[:10].numpy()
-actual_number
 
 test_output, last_layer = cnn(imgs[:10])
 pred_y = torch.max(test_output, 1)[1].data.numpy().squeeze()
@@ -147,3 +160,4 @@ print(f'Actual number: {actual_number}')
 
 cnn(torch.Tensor(np.random.random((100, 1, 28, 28))))
 
+# Step 5 Generate Images
