@@ -10,20 +10,30 @@ import matplotlib.pyplot as plt
 
 # Step 1 Get Data
 
+def foo():
+    a = ToTensor()
+    def f(b):
+        noise = np.float32(np.round(np.random.random((1, 28, 28)) - 0.4) * np.random.random((1, 28, 28)) * 0.1)
+        # noise = np.float32(np.ones((1,28,28)))
+        # print(a(b) + noise)
+        return a(b) + noise
+    # return noise
+    return f
+
 train_data = datasets.MNIST(
     root = 'data',
     train = True,
-    transform = ToTensor(),
+    transform = foo(),
     download = True,
 )
 test_data = datasets.MNIST(
     root = 'data',
     train = False,
-    transform = ToTensor()
+    transform = foo(),
 )
 
-train_data.data = train_data.data / 1
-test_data.data = test_data.data / 1
+# train_data.data = train_data.train_data / 255.0
+# test_data.data = test_data.data
 
 print(train_data.train_labels[:5])
 
@@ -92,7 +102,7 @@ optimizer = optim.Adam(cnn.parameters(), lr = 0.01)
 
 # Step 4 Train
 from torch.autograd import Variable
-num_epochs = 1
+num_epochs = 8
 def train(num_epochs, cnn, loaders):
 
     cnn.train()
