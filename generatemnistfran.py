@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 def foo():
     a = ToTensor()
     def f(b):
-        noise = np.float32(np.round(np.random.random((1, 28, 28)) - 0.4) * np.random.random((1, 28, 28)) * 0.1)
+        noise = np.float32(np.round(np.random.random((1, 28, 28)) - 0.0) * np.random.random((1, 28, 28)) * 1.0)
         # noise = np.float32(np.ones((1,28,28)))
         # print(a(b) + noise)
         return a(b) + noise
@@ -58,8 +58,7 @@ data_set_len = len(loaders['train'].dataset.data)
 #loaders['train'].dataset.data += np.round(np.random.random((data_set_len, 28, 28)) - 0.4) * np.random.random((data_set_len, 28, 28)) * 0.1
 
 for i in range(2):
-    f.to_image(np.array(loaders['train'].dataset.data[i]))
-
+    f.to_image(np.array(loaders['train'].dataset[i][0][0]))
 
 # Step 3 Make model
 
@@ -102,7 +101,7 @@ optimizer = optim.Adam(cnn.parameters(), lr = 0.01)
 
 # Step 4 Train
 from torch.autograd import Variable
-num_epochs = 8
+num_epochs = 2**5
 def train(num_epochs, cnn, loaders):
 
     cnn.train()
