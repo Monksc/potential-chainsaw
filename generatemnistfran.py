@@ -22,8 +22,8 @@ test_data = datasets.MNIST(
     transform = ToTensor()
 )
 
-train_data.data = train_data.data / 255.0
-test_data.data = test_data.data / 255.0
+train_data.data = train_data.data / 1
+test_data.data = test_data.data / 1
 
 print(train_data.train_labels[:5])
 
@@ -86,15 +86,13 @@ cnn = CNN()
 print(cnn)
 
 loss_func = nn.CrossEntropyLoss()
-loss_func
 
 from torch import optim
 optimizer = optim.Adam(cnn.parameters(), lr = 0.01)
-optimizer
 
 # Step 4 Train
 from torch.autograd import Variable
-num_epochs = 200
+num_epochs = 1
 def train(num_epochs, cnn, loaders):
 
     cnn.train()
@@ -114,7 +112,7 @@ def train(num_epochs, cnn, loaders):
             output = cnn(b_x)[0]
             loss = loss_func(output, b_y)
 
-            batch_loss += loss
+            batch_loss += loss.item()
             count += 1
 
             # clear gradients for this training step
@@ -131,6 +129,7 @@ def train(num_epochs, cnn, loaders):
 
         loss_values.append(batch_loss / count)
     plt.plot(np.array(loss_values), 'r')
+    plt.show()
 
 train(num_epochs, cnn, loaders)
 
