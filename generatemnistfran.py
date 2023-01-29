@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import functions as f
+import matplotlib.pyplot as plt
 
 # Step 1 Get Data
 
@@ -93,7 +94,7 @@ optimizer
 
 # Step 4 Train
 from torch.autograd import Variable
-num_epochs = 5
+num_epochs = 200
 def train(num_epochs, cnn, loaders):
 
     cnn.train()
@@ -101,7 +102,10 @@ def train(num_epochs, cnn, loaders):
     # Train the model
     total_step = len(loaders['train'])
 
+    loss_values = []
     for epoch in range(num_epochs):
+        batch_loss = 0.0
+        count = 0
         for i, (images, labels) in enumerate(loaders['train']):
 
             # gives batch data, normalize x when iterate train_loader
@@ -109,6 +113,9 @@ def train(num_epochs, cnn, loaders):
             b_y = Variable(labels)   # batch y
             output = cnn(b_x)[0]
             loss = loss_func(output, b_y)
+
+            batch_loss += loss
+            count += 1
 
             # clear gradients for this training step
             optimizer.zero_grad()
@@ -121,12 +128,9 @@ def train(num_epochs, cnn, loaders):
             if (i+1) % 100 == 0:
                 print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
                        .format(epoch + 1, num_epochs, i + 1, total_step, loss.item()))
-                pass
 
-        pass
-
-
-    pass
+        loss_values.append(batch_loss / count)
+    plt.plot(np.array(loss_values), 'r')
 
 train(num_epochs, cnn, loaders)
 
@@ -142,10 +146,8 @@ def test():
             test_output, last_layer = cnn(images)
             pred_y = torch.max(test_output, 1)[1].data.squeeze()
             accuracy = (pred_y == labels).sum().item() / float(labels.size(0))
-            pass
     print('Test Accuracy of the model on the 10000 test images: %.2f' % accuracy)
 
-    pass
 test()
 
 sample = next(iter(loaders['test']))
