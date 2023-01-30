@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 def foo():
     a = ToTensor()
     def f(b):
-        noise = np.float32(np.round(np.random.random((1, 28, 28)) - 0.0) * np.random.random((1, 28, 28)) * 1.0)
+        noise = np.float32(np.round(np.random.random((1, 28, 28)) - 0.4) * np.random.random((1, 28, 28)) * 0.1)
         # noise = np.float32(np.ones((1,28,28)))
         # print(a(b) + noise)
         return a(b) + noise
@@ -171,3 +171,22 @@ print(f'Actual number: {actual_number}')
 cnn(torch.Tensor(np.random.random((100, 1, 28, 28))))
 
 # Step 5 Generate Images
+
+import fran
+
+while True:
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    im_seed = torch.rand((10, 1, 28, 28))
+    targets = torch.Tensor(np.eye(10))
+    EPS = 40
+    ITS = 100
+    ALP = 1
+    loss_list=[]
+    iter_list=[]
+    frans_data = fran.PGD_attack(cnn, device, im_seed, targets, EPS, ALP, ITS, rand_start=False, loss_list=loss_list, iter_list=iter_list, num_im=5)
+    images = frans_data[0]
+    for i in range(len(images)):
+        print('MAKING A', i)
+        f.to_image(np.array(images[i][0]))
+        input()
+

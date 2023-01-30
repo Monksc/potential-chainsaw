@@ -5,7 +5,7 @@ import torch
 def gradient_wrt_data(model,device,data,lbl, loss_list, num_im):
     dat = data.clone().detach()
     dat.requires_grad = True
-    out = model(dat)
+    out = model(dat)[0]
     loss = F.cross_entropy(out,lbl)
     model.zero_grad()
     loss.backward()
