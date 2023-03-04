@@ -7,6 +7,7 @@ import torch.nn as nn
 import numpy as np
 import functions as f
 import matplotlib.pyplot as plt
+from torch.distributions.multivariate_normal import MultivariateNormal
 
 # Step 1 Get Data
 
@@ -101,7 +102,7 @@ optimizer = optim.Adam(cnn.parameters(), lr = 0.01)
 
 # Step 4 Train
 from torch.autograd import Variable
-num_epochs = 2**5
+num_epochs = 1
 def train(num_epochs, cnn, loaders):
 
     cnn.train()
@@ -144,19 +145,20 @@ train(num_epochs, cnn, loaders)
 
 # Step 4.1 Test Model And do other stuff with model
 
-def test():
+def test(data_to_test):
     # Test the model
     cnn.eval()
     with torch.no_grad():
         correct = 0
         total = 0
-        for images, labels in loaders['test']:
+        print(data_to_test)
+        for images, labels in data_to_test:
             test_output, last_layer = cnn(images)
             pred_y = torch.max(test_output, 1)[1].data.squeeze()
             accuracy = (pred_y == labels).sum().item() / float(labels.size(0))
     print('Test Accuracy of the model on the 10000 test images: %.2f' % accuracy)
 
-test()
+test(loaders['test'])
 
 sample = next(iter(loaders['test']))
 imgs, lbls = sample
@@ -174,19 +176,30 @@ cnn(torch.Tensor(np.random.random((100, 1, 28, 28))))
 
 import fran
 
+n = 100
+device = "cuda" if torch.cuda.is_available() else "cpu"
+im_seed = torch.rand((n, 1, 28, 28))
+targets = torch.Tensor(np.array(list(np.eye(10))*(n//10)))
+EPS = 40
+ITS = 1000
+ALP = 1
+loss_list=[]
+iter_list=[]
+frans_data = fran.PGD_attack(cnn, device, im_seed, targets, EPS, ALP, ITS, rand_start=False, loss_list=loss_list, iter_list=iter_list, num_im=5)[0]
+out = cnn(frans_data)[0].detach().numpy()
+guess = np.eye(10)[np.argmax(out, axis=1)]
+print("Frans Images Got ", (n - (targets - guess).sum()) / n, "correct")
+
 while True:
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    im_seed = torch.rand((10, 1, 28, 28))
+    #im_seed = torch.rand((10, 1, 28, 28))
+    im_seed = torch.Tensor(np.array(loaders['train'].dataset.data[:10]).reshape(10, 1, 28, 28))
     targets = torch.Tensor(np.eye(10))
-    EPS = 40
-    ITS = 100
-    ALP = 1
-    loss_list=[]
-    iter_list=[]
     frans_data = fran.PGD_attack(cnn, device, im_seed, targets, EPS, ALP, ITS, rand_start=False, loss_list=loss_list, iter_list=iter_list, num_im=5)
     images = frans_data[0]
+    outputs = cnn(images)
     for i in range(len(images)):
-        print('MAKING A', i)
+        print('MAKING A', i, outputs[0][i])
         f.to_image(np.array(images[i][0]))
         input()
+
 

@@ -1,6 +1,27 @@
 import torch.nn.functional as F
 import torch
 
+
+def downsample(x, step=GRAIN):
+    down = torch.zeros([len(x), 3, DATA_SHAPE//step, DATA_SHAPE//step])
+
+    for i in range(0, DATA_SHAPE, step):
+        for j in range(0, DATA_SHAPE, step):
+            v = x[:, :, i:i+step, j:j+step].mean(dim=2, keepdim=True).mean(dim=3, keepdim=True)
+            ii, jj = i // step, j // step
+            down[:, :, ii:ii+1, jj:jj+1] = v
+    return down
+
+def upsample(x, step=GRAIN):
+    up = torch.zeros([len(x), 3, DATA_SHAPE, DATA_SHAPE])
+
+    for i in range(0, DATA_SHAPE, step):
+        for j in range(0, DATA_SHAPE, step):
+            ii, jj = i // step, j // step
+            up[:, :, i:i+step, j:j+step] = x[:, :, ii:ii+1, jj:jj+1]
+    return up
+
+
 # Compute the gradient of the loss w.r.t. the input data
 def gradient_wrt_data(model,device,data,lbl, loss_list, num_im):
     dat = data.clone().detach()
